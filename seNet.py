@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+
+
 class SENet(nn.Module):
     def __init__(self, inplanes, r=16):
         super(SENet, self).__init__()
@@ -12,6 +14,7 @@ class SENet(nn.Module):
             nn.Linear(inplanes // r, inplanes),
             nn.Sigmoid(),
         )
+
     def forward(self, x):
         # 缓存x
         intifi = x
