@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
 from torchvision.models import ResNet18_Weights
+from torchvision.models._utils import _ovewrite_named_param
 
-from torchvision.models.resnet import _resnet, BasicBlock
+from torchvision.models.resnet import BasicBlock, ResNet
 
 
 # 定义个seNet
@@ -44,9 +45,6 @@ class Re_SeNet(BasicBlock):
         self.se = Net(inplanes)
 
     def forward(self, x):
-        # 在这里加在对x进行SeNet后再进行后续操作
-        x = self.se(x)
-
         identity = x
         out = self.conv1(x)
         out = self.bn1(out)
@@ -65,6 +63,54 @@ class Re_SeNet(BasicBlock):
         return out
 
 
+class ModifyNet(ResNet):
+    def __init__(self,
+                 block,
+                 layers,
+                 num_classes,
+                 zero_init_residual: bool = False,
+                 groups: int = 1,
+                 width_per_group: int = 64,
+                 replace_stride_with_dilation=None,
+                 norm_layer=None, ):
+        super(ModifyNet, self).__init__(
+            block,
+            layers,
+            num_classes = 1000,
+            zero_init_residual=False,
+            groups=1,
+            width_per_group: int = 64,
+        replace_stride_with_dilation = None,
+        norm_layer = None,
+
+       )
+        self.modefiy(self.layer4)
+
+    def modefiy(self, layer4):
+        seNet = Net(input_channels=512)
+        return nn.Sequential(
+            layer4,
+            seNet
+        )
+
+
+def _resnet(
+        block,
+        layers,
+        weights,
+        progress: bool,
+        **kwargs,
+):
+    if weights is not None:
+        _ovewrite_named_param(kwargs, "num_classes", len(weights.meta["categories"]))
+
+    model = ModifyNet(block, layers, **kwargs)
+
+    if weights is not None:
+        model.load_state_dict(weights.get_state_dict(progress=progress))
+    return model
+
+
 def resnet18senet(*, weights=None, progress=True, **kwargs):
     weights = ResNet18_Weights.verify(weights)
     return _resnet(Re_SeNet, [2, 2, 2, 2], weights, progress, **kwargs)
@@ -75,6 +121,3 @@ if __name__ == '__main__':
     model = resnet18senet()
     y = model(x)
     print(y.shape)
-
-
-
