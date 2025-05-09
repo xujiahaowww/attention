@@ -20,6 +20,7 @@ class SENet(nn.Module):
         intifi = x
         x = self.sq(x)
         x = x.view(x.size(0), -1)
+        print(x.shape)
         x = self.ex(x).view(x.size(0), -1, 1, 1)
         return intifi * x
 

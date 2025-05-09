@@ -9,7 +9,7 @@ class skNet(nn.Module):
         super(skNet, self).__init__()
 
         self.cov3x3 = nn.Sequential(
-            nn.Conv2d(in_channels, in_channels, kernel_size=3, stride=1, padding=1, groups=in_channels),
+                nn.Conv2d(in_channels, in_channels, kernel_size=3, stride=1, padding=1, groups=in_channels),
             nn.Conv2d(in_channels, in_channels, kernel_size=1),
             nn.BatchNorm2d(in_channels),
             nn.ReLU(inplace=True),
